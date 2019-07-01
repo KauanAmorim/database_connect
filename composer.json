@@ -1,0 +1,14 @@
+{
+    "name": "connect_database",
+    "description": "personal lib to connect with data base",
+    "author": {
+        "name": "Kauan Amorim",
+        "email": "kauanamorim88@gmail.com"
+    },
+    "autoload": {
+        "psr-4": {
+            
+        }
+    },
+    "require": {}
+}
