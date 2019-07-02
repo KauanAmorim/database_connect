@@ -1,13 +1,15 @@
 {
-    "name": "connect_database",
+    "name": "kamorim/connect",
     "description": "personal lib to connect with data base",
-    "author": {
-        "name": "Kauan Amorim",
-        "email": "kauanamorim88@gmail.com"
-    },
+    "authors": [
+        {
+            "name": "Kauan Amorim",
+            "email": "kauanamorim88@gmail.com"
+        }
+    ],
     "autoload": {
         "psr-4": {
-            
+            "connection\\": "src/"
         }
     },
     "require": {}
