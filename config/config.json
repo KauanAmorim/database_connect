@@ -1,13 +1,3 @@
 {
-    "keep": {
-        "host": "127.0.0.1",
-        "user": "Kauan",
-        "pass": "kauan989mysql"
-    },
 
-    "buy_register": {
-        "host": "127.0.0.1",
-        "user": "Kauan",
-        "pass": "kauan989mysql"
-    }
 }
