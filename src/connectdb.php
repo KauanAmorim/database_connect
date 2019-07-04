@@ -11,44 +11,96 @@ class connectdb
     {
 		$this->db_name = $db_name;
 	}
+
+	/**
+	 * This method set a connection.
+	 * 
+	 * @param Object $connection -> Instance of PDO Object.
+	 * @return Boolean -> True if success and False if failure.
+	 */
+	public function setConnection($connection)
+	{
+		if($connection instanceof \PDO){
+			$this->db = $connection;
+			return true;
+		} else {
+			return false;
+		}
+	}
 	
-	public function getConnection()
+	/**
+	 * This method makes a connection to database.
+	 *
+	 * @param Boolean $debug -> for debug failure - True -> @return Array.
+	 * @return Object -> Connection Object.
+	 * @return Boolean -> False if don't set the db_name.
+	 */
+	public function getConnection($debug = false)
 	{
         if($this->db_name){
 
-			$json = \file_get_contents("config/config.json");
-			$config = (array) json_decode($json);
-		
-			if(array_key_exists($this->db_name, $config)){
-				return $this->tryConnection($config);
+			if(!isset($this->db) && empty($this->db)){
+
+				$json = \file_get_contents("config/config.json");
+				$config = (array) json_decode($json);
+			
+				if(array_key_exists($this->db_name, $config)){
+					return $this->tryConnection($config, $debug);
+				}
+			} else {
+				return $this->db;
 			}
         } 
         return false;
 	}
 
+	/**
+	 * Make a Begin Transaction.
+	 * 
+	 * @return Boolean -> True if success and False if failure.
+	 */
 	public function beginTransaction()
 	{
 		return $this->db->beginTransaction();
 	}
 
+	/**
+	 * Make a Rollback.
+	 * 
+	 * @return Boolean -> True if success and False if failure.
+	 */
 	public function rollBack()
 	{
 		return $this->db->rollBack();
 	}
 
+	/**
+	 * This method execute querys
+	 * 
+	 * @param String $query -> sql to consult in database.
+	 * @param String $return -> What returns.
+	 * @return Mixed -> Return the result of sql execution.
+	 */
 	public function execute($query, $return = null)
 	{
 		if(!empty($query)){
 
 			$statement = $this->db->prepare($query);
 			if($statement->execute()){
-				return $this->selectReturn($return);
+				return $this->selectReturn($return, $statement);
 			}
 		}
 		return false;
 	}
 
-	private function selectReturn($return)
+	/**
+	 * This method is an axulixiar method to execute sql.
+	 * 
+	 * @param String $return -> What returns.
+	 * @param Object $statement -> Object statement.
+	 * @return Mixed -> Return the result of sql execution.
+	 */
+	private function selectReturn($return, $statement)
 	{
 		switch ($return) {
 			case 'fetch':
@@ -73,6 +125,13 @@ class connectdb
 		}
 	}
 
+	/**
+	 * This method try connect with an database.
+	 * 
+	 * @param Array $config -> database config.
+	 * @return Object -> if success.
+	 * @return Boolean -> if failure.
+	 */
 	private function tryConnection($config)
 	{
 		try {
@@ -86,7 +145,13 @@ class connectdb
 			return $this->db;
 			
 		} catch (\Exception $th) {
-			return $th->getMessage();
+			if($debug == true){
+				return [
+					'message' => $th->getMessage(),
+					'return' => false
+				];
+			}
+			return false;
 		}
 	}
 }
