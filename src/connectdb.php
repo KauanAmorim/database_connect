@@ -5,11 +5,17 @@ namespace connection;
 class connectdb 
 {
 	private $db;
-	private $db_name;
+    private $db_name;
+    
+    private $json;
+    private $config;
 
     public function __construct($db_name = null)
     {
-		$this->db_name = $db_name;
+        $this->db_name = $db_name;
+        
+        $this->json = \file_get_contents("config/config.json");
+        $this->config = (array) json_decode($this->json);
 	}
 
 	/**
@@ -44,35 +50,53 @@ class connectdb
 				$json = \file_get_contents("config/config.json");
 				$config = (array) json_decode($json);
 			
-				if(array_key_exists($this->db_name, $config)){
-					return $this->tryConnection($config, $debug);
+				if(array_key_exists($this->db_name, $this->config)){
+					return $this->tryConnection($debug);
 				}
 			} else {
 				return $this->db;
 			}
         } 
         return false;
-	}
+    }
+    
+    /**
+     * This method get data to connec with db.
+     */
+    public function getConnectionData()
+    {
+        return [
+            'data' => [
+                'db_name' => $this->db_name,
+                'host' => $this->config[$this->db_name]->host,
+                'user' => $this->config[$this->db_name]->user,
+                'pass' => $this->config[$this->db_name]->pass
+            ]
+        ];
+    }
 
-	/**
-	 * Make a Begin Transaction.
-	 * 
-	 * @return Boolean -> True if success and False if failure.
-	 */
-	public function beginTransaction()
-	{
-		return $this->db->beginTransaction();
-	}
-
-	/**
-	 * Make a Rollback.
-	 * 
-	 * @return Boolean -> True if success and False if failure.
-	 */
-	public function rollBack()
-	{
-		return $this->db->rollBack();
-	}
+    /**
+     * This function make actions of transactions.
+     * @param String $action -> name of the action.
+     * @return Boolean false if action doesn't exist.
+     */
+    public function transctions(String $action)
+    {
+        switch ($action) {
+            case 'beginTransaction':
+                return $this->db->$action();
+                break;
+            case 'commit':
+                return $this->db->$action();
+                break;
+            case 'rollback':
+                return $this->db->$action();
+                break;
+            default:
+                return false;
+                break;
+        }
+    }
 
 	/**
 	 * This method execute querys
@@ -132,22 +156,28 @@ class connectdb
 	 * @return Object -> if success.
 	 * @return Boolean -> if failure.
 	 */
-	private function tryConnection($config)
+	private function tryConnection($debug)
 	{
 		try {
 
 			$this->db = new \PDO(
-				"mysql:host=".$config[$this->db_name]->host.";dbname=".$this->db_name,
-				$config[$this->db_name]->user, $config[$this->db_name]->pass, 
+                "mysql:
+                host=".$this->config[$this->db_name]->host.";
+                dbname=".$this->db_name,
+                $this->config[$this->db_name]->user, 
+                $this->config[$this->db_name]->pass,
 				array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION)
 			);
 
 			return $this->db;
 			
 		} catch (\Exception $th) {
+
 			if($debug == true){
+                $connection_data = $this->getConnectionData();
 				return [
-					'message' => $th->getMessage(),
+                    'message' => $th->getMessage(),
+                    'data' => $connection_data['data'],
 					'return' => false
 				];
 			}
