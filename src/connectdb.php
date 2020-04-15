@@ -10,12 +10,12 @@ class connectdb
     private $json;
     private $config;
 
-    public function __construct($db_name = null)
+    public function __construct($config_path, $db_name = null)
     {
         $this->db_name = $db_name;
         
-        $this->json = \file_get_contents("config/config.json");
-        $this->config = (array) json_decode($this->json);
+        $this->json = \file_get_contents($config_path);
+		$this->config = (array) json_decode($this->json);
 	}
 
 	/**

@@ -1,6 +1,6 @@
 {
     "name": "kauan/database",
-    "description": "personal lib to connect with data base",
+    "description": "personal lib to connect with database",
     "type": "library",
     "license": "MIT",
     "authors": [
