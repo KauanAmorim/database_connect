@@ -4,7 +4,7 @@ namespace connection;
 
 class connectdb 
 {
-	private $db;
+	private $database;
     private $db_name;
     
     private $json;
@@ -13,9 +13,13 @@ class connectdb
     public function __construct($config_path, $db_name = null)
     {
         $this->db_name = $db_name;
-        
-        $this->json = \file_get_contents($config_path);
-		$this->config = (array) json_decode($this->json);
+		
+		if(file_exists($config_path)){
+			$this->json = \file_get_contents($config_path);
+			$this->config = (array) json_decode($this->json);
+		} else {
+			throw new \Exception('File not exist');
+		}
 	}
 
 	/**
@@ -24,13 +28,13 @@ class connectdb
 	 * @param Object $connection -> Instance of PDO Object.
 	 * @return Boolean -> True if success and False if failure.
 	 */
-	public function setConnection($connection)
+	public function setConnection(\PDO $connection)
 	{
 		if($connection instanceof \PDO){
-			$this->db = $connection;
+			$this->database = $connection;
 			return true;
 		} else {
-			return false;
+			throw new \Exception('This is not a PDO instance');
 		}
 	}
 	
@@ -45,24 +49,23 @@ class connectdb
 	{
         if($this->db_name){
 
-			if(!isset($this->db) && empty($this->db)){
+			if(!isset($this->database) && empty($this->database)){
 
 				$json = \file_get_contents("config/config.json");
 				$config = (array) json_decode($json);
 			
 				if(array_key_exists($this->db_name, $this->config)){
 					return $this->tryConnection($debug);
+				} else {
+					throw new \Exception('Error database do not exist');
 				}
 			} else {
-				return $this->db;
+				return $this->database;
 			}
         } 
-        return false;
+        throw new \Exception('Error database name is not defined');
     }
-    
-    /**
-     * This method get data to connec with db.
-     */
+
     public function getConnectionData()
     {
         return [
@@ -75,113 +78,38 @@ class connectdb
         ];
     }
 
-    /**
-     * This function make actions of transactions.
-     * @param String $action -> name of the action.
-     * @return Boolean false if action doesn't exist.
-     */
-    public function transctions(String $action)
-    {
-        switch ($action) {
-            case 'beginTransaction':
-                return $this->db->$action();
-                break;
-            case 'commit':
-                return $this->db->$action();
-                break;
-            case 'rollback':
-                return $this->db->$action();
-                break;
-            default:
-                return false;
-                break;
-        }
-    }
-
 	/**
-	 * This method execute querys
-	 * 
-	 * @param String $query -> sql to consult in database.
-	 * @param String $return -> What returns.
-	 * @return Mixed -> Return the result of sql execution.
-	 */
-	public function execute($query, $return = null)
-	{
-		if(!empty($query)){
-
-			$statement = $this->db->prepare($query);
-			if($statement->execute()){
-				return $this->selectReturn($return, $statement);
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * This method is an axulixiar method to execute sql.
-	 * 
-	 * @param String $return -> What returns.
-	 * @param Object $statement -> Object statement.
-	 * @return Mixed -> Return the result of sql execution.
-	 */
-	private function selectReturn($return, $statement)
-	{
-		switch ($return) {
-			case 'fetch':
-				return $statement->fetch();
-				break;
-			
-			case 'fetchAll':
-				return $statement->fetchAll();
-				break;
-
-			case 'lastInsertId':
-				return $this->db->lastInsertId();
-				break;
-
-			case 'rowCount':
-				return $statement->rowCount();
-				break;
-
-			default:
-				return true;
-				break;
-		}
-	}
-
-	/**
-	 * This method try connect with an database.
+	 * This method support just mysql connections
 	 * 
 	 * @param Array $config -> database config.
 	 * @return Object -> if success.
 	 * @return Boolean -> if failure.
 	 */
-	private function tryConnection($debug)
+	private function tryConnection()
 	{
 		try {
 
-			$this->db = new \PDO(
+			$this->database = new \PDO(
                 "mysql:
                 host=".$this->config[$this->db_name]->host.";
                 dbname=".$this->db_name,
                 $this->config[$this->db_name]->user, 
                 $this->config[$this->db_name]->pass,
-				array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION)
+				[\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]
 			);
 
-			return $this->db;
+			return $this->database;
 			
 		} catch (\Exception $th) {
 
-			if($debug == true){
-                $connection_data = $this->getConnectionData();
-				return [
-                    'message' => $th->getMessage(),
-                    'data' => $connection_data['data'],
-					'return' => false
-				];
-			}
-			return false;
+			$connection_data = $this->getConnectionData();
+			$ObjError = new \stdClass;
+			$ObjError->trace = $th->getTrace();
+			$ObjError->message = $th->getTrace();
+			$ObjError->ConnectionData = $connection_data['data'];
+			$ObjError->return = false;
+
+			return $ObjError;
 		}
 	}
 }

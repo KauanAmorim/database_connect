@@ -7,10 +7,13 @@ $connection = $connect->getConnection();
 
 $query = "SELECT * FROM usuarios";
 
-var_dump($connect->transctions('beginTransaction'));
-// var_dump($connect->transctions('rollback'));
-// var_dump($connect->transctions('commit'));
+// var_dump($connection->beginTransaction());
 
-var_dump($connect->execute($query, 'fetch'));
-// var_dump($connect->setConnection($connection));
-// var_dump($connect->getConnectionData());
+$statement = $connection->query($query);
+var_dump($statement->fetchObject());
+
+// $statement = $connection->prepare($query);
+// $statement->execute();
+// $usuario = $statement->fetch(\PDO::FETCH_OBJ);
+
+// var_dump($usuario);
