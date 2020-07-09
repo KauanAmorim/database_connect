@@ -9,11 +9,7 @@ $query = "SELECT * FROM usuarios";
 
 // var_dump($connection->beginTransaction());
 
-$statement = $connection->query($query);
-var_dump($statement->fetchObject());
-
-// $statement = $connection->prepare($query);
-// $statement->execute();
-// $usuario = $statement->fetch(\PDO::FETCH_OBJ);
+// $statement = $connection->query($query);
+// var_dump($statement->fetchAll(\PDO::FETCH_CLASS));
 
 // var_dump($usuario);
