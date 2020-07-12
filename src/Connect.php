@@ -1,8 +1,8 @@
 <?php
 
-namespace connection;
+namespace DatabaseConnect;
 
-class connectdb 
+class Connect
 {
 	private $database;
     private $db_name;
@@ -18,7 +18,7 @@ class connectdb
 			$this->json = \file_get_contents($config_path);
 			$this->config = (array) json_decode($this->json);
 		} else {
-			throw new \Exception('File not exist');
+			throw new \Exception('Config File not exist');
 		}
 	}
 
@@ -68,14 +68,13 @@ class connectdb
 
     public function getConnectionData()
     {
-        return [
-            'data' => [
-                'db_name' => $this->db_name,
-                'host' => $this->config[$this->db_name]->host,
-                'user' => $this->config[$this->db_name]->user,
-                'pass' => $this->config[$this->db_name]->pass
-            ]
-        ];
+		$Data = new \stdClass;
+		$Data->db_name = $this->db_name;
+		$Data->host = $this->config[$this->db_name]->host;
+		$Data->user = $this->config[$this->db_name]->user;
+		$Data->pass = $this->config[$this->db_name]->pass;
+		
+		return $Data;
     }
 
 	/**
