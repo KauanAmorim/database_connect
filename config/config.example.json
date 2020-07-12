@@ -3,5 +3,10 @@
         "host": "",
         "user": "",
         "pass": ""
+    },
+    "dbname_2": {
+        "host": "",
+        "user": "",
+        "pass": ""
     }
 }
